@@ -14,10 +14,10 @@ form.addEventListener('submit',async event=>{
  const controls=Array.from(form.querySelectorAll('input'));controls.forEach(x=>x.disabled=true);
  try{
   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),45000);
-  let response;try{response=await fetch(window.QUIZ_CONFIG.endpoint,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({candidate:candidate.value.trim(),answers:selected,requestId}),redirect:'follow',signal:controller.signal});}finally{clearTimeout(timer);}
+  let response;try{response=await fetch(window.QUIZ_CONFIG.endpoint,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({candidate:candidate.value.trim(),answers:selected,requestId,schemaVersion:2}),redirect:'follow',signal:controller.signal});}finally{clearTimeout(timer);}
   if(!response.ok)throw new Error('伺服器暫時無法接收作答，請稍後再試。');
   const data=await response.json();if(!data.ok)throw new Error(data.message||'送出失敗。');
-  if(data.requestId!==requestId || !Number.isInteger(data.score) || data.score<0 || data.score>100 || !Array.isArray(data.results) || data.results.length!==20)throw new Error('回傳結果不完整，請重試。');
+  if(data.schemaVersion!==2 || data.requestId!==requestId || !Number.isInteger(data.score) || data.score<0 || data.score>100 || !Array.isArray(data.results) || data.results.length!==20)throw new Error('回傳結果不完整，請重試。');
   submitted=true;status.textContent='作答已儲存至 Google 試算表。';submit.textContent='已送出';
   result.replaceChildren();const h=document.createElement('h2');h.textContent='作答結果';const score=document.createElement('p');score.className='score';score.textContent='總分 '+data.score+' / 100';result.append(h,score);
   const list=document.createElement('ol');list.className='result-list';
